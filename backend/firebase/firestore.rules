@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /events/{eventId} {
+        allow read, write: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+            'kind', 'createdAt', 'ciphertext', 'clientSchemaVersion'
+          ]);
+      }
+
+      match /subscription/{doc} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /ptExports/{exportId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+  }
+}
