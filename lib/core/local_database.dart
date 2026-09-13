@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -19,8 +20,12 @@ class LocalDatabase {
 
   Future<Database> get database async {
     if (_db != null) return _db!;
-    final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, 'fitpro_encrypted.db');
+    final path = kIsWeb
+        ? 'fitpro_encrypted.db'
+        : p.join(
+            (await getApplicationDocumentsDirectory()).path,
+            'fitpro_encrypted.db',
+          );
     _db = await openDatabase(
       path,
       version: schemaVersion,
