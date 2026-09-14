@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/exercise_detail/exercise_detail_screen.dart';
+import 'features/form_check/form_check_screen.dart';
 import 'features/goals/goals_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -47,6 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/paywall',
         builder: (context, state) =>
             PaywallScreen(triggerReason: state.extra as String?),
+      ),
+      GoRoute(
+        path: '/form-check',
+        builder: (context, state) => const FormCheckScreen(),
       ),
       GoRoute(path: '/goals', builder: (context, state) => const GoalsScreen()),
       GoRoute(

@@ -4,6 +4,7 @@ import '../core/encryption_service.dart';
 import '../core/local_database.dart';
 import '../data/models/ai_workout.dart';
 import '../data/models/exercise.dart';
+import '../data/models/form_check_result.dart';
 import '../data/models/gamification.dart';
 import '../data/models/health_logs.dart';
 import '../data/models/readiness.dart';
@@ -68,6 +69,7 @@ class AppSession {
     required this.dailyQuests,
     required this.exercises,
     required this.routines,
+    required this.formCheckFlags,
   });
 
   final UserProfile profile;
@@ -80,6 +82,7 @@ class AppSession {
   final List<DailyQuest> dailyQuests;
   final List<Exercise> exercises;
   final List<Routine> routines;
+  final List<FormCheckFlag> formCheckFlags;
 
   AppSession copyWith({
     UserProfile? profile,
@@ -93,6 +96,7 @@ class AppSession {
     List<DailyQuest>? dailyQuests,
     List<Exercise>? exercises,
     List<Routine>? routines,
+    List<FormCheckFlag>? formCheckFlags,
   }) {
     return AppSession(
       profile: profile ?? this.profile,
@@ -105,6 +109,7 @@ class AppSession {
       dailyQuests: dailyQuests ?? this.dailyQuests,
       exercises: exercises ?? this.exercises,
       routines: routines ?? this.routines,
+      formCheckFlags: formCheckFlags ?? this.formCheckFlags,
     );
   }
 }
@@ -154,6 +159,7 @@ class AppSessionController extends AsyncNotifier<AppSession> {
       dailyQuests: await repo.loadDailyQuests(),
       exercises: await repo.loadExercises(),
       routines: await repo.loadRoutines(),
+      formCheckFlags: await repo.loadFormCheckFlags(),
     );
   }
 
@@ -199,6 +205,34 @@ class AppSessionController extends AsyncNotifier<AppSession> {
     );
     await _repo.saveReadiness(next);
     state = AsyncData(current.copyWith(readiness: next));
+  }
+
+  Future<void> recordFormCheck(FormCheckResult result) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    final counts = <String, int>{};
+    for (final fault in result.faults) {
+      counts[fault] = (counts[fault] ?? 0) + 1;
+    }
+    final repeated = counts.entries
+        .where((entry) => entry.value >= 3)
+        .map(
+          (entry) => FormCheckFlag(
+            text: '${entry.key} (${entry.value} observations)',
+            source: InjuryFlagSource.formCheckObserved,
+          ),
+        )
+        .toList();
+    if (repeated.isEmpty) return;
+    final existing = [...current.formCheckFlags];
+    for (final flag in repeated) {
+      final name = flag.text.split(' (').first;
+      if (!existing.any((item) => item.text.startsWith('$name ('))) {
+        existing.add(flag);
+      }
+    }
+    await _repo.saveFormCheckFlags(existing);
+    state = AsyncData(current.copyWith(formCheckFlags: existing));
   }
 
   Future<void> generateWorkout() async {

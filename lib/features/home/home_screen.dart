@@ -154,6 +154,20 @@ class HomeScreen extends ConsumerWidget {
                             }
                           },
                   ),
+                  const SizedBox(height: 12),
+                  NeonButton(
+                    label: 'Form Check',
+                    icon: Icons.accessibility_new,
+                    lime: true,
+                    onPressed: () => data.subscription.isAiPro
+                        ? context.push('/form-check')
+                        : context.push(
+                            '/paywall',
+                            extra:
+                                computePaywallReason(readiness, data.plan) ??
+                                'Form Check uses live camera analysis to catch form issues before they become injuries.',
+                          ),
+                  ),
                   const SizedBox(height: 16),
                   if (data.plan != null)
                     GlassCard(
@@ -170,6 +184,53 @@ class HomeScreen extends ConsumerWidget {
                               fontSize: 12,
                             ),
                           ),
+                          if (data.formCheckFlags.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            GlassCard(
+                              accent: AppColors.warning,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'OBSERVED FROM FORM CHECK',
+                                    style: TextStyle(
+                                      color: AppColors.warning,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1.1,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ...data.formCheckFlags.map(
+                                    (flag) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(
+                                            Icons.visibility,
+                                            color: AppColors.warning,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(child: Text(flag.text)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'Observed locally during a Form Check session, not predicted by AI.',
+                                    style: TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 6),
                           Text(
                             data.plan!.title,

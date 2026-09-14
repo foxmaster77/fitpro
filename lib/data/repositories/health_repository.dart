@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/local_database.dart';
 import '../models/ai_workout.dart';
 import '../models/exercise.dart';
+import '../models/form_check_result.dart';
 import '../models/gamification.dart';
 import '../models/health_logs.dart';
 import '../models/readiness.dart';
@@ -51,6 +52,19 @@ class HealthRepository {
     if (raw == null) return null;
     return AiWorkoutPlan.fromJson(raw);
   }
+
+  Future<List<FormCheckFlag>> loadFormCheckFlags() async {
+    final raw = await _db.getKv('form_check_flags');
+    if (raw == null) return const [];
+    return (raw['flags'] as List<dynamic>? ?? const [])
+        .map((item) => FormCheckFlag.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> saveFormCheckFlags(List<FormCheckFlag> flags) => _db.putKv(
+    'form_check_flags',
+    {'flags': flags.map((flag) => flag.toJson()).toList()},
+  );
 
   Future<void> logLift({
     required String exercise,
@@ -132,21 +146,23 @@ class HealthRepository {
     final db = await _db.database;
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
-    
+
     final rows = await db.query(
       'daily_quests',
       where: 'created_at >= ?',
       whereArgs: [startOfDay.millisecondsSinceEpoch],
       orderBy: 'created_at DESC',
     );
-    
+
     return rows.map((row) {
       final payload = _db.decryptJson(row['ciphertext'] as String);
       return DailyQuest.fromJson({
         ...payload,
         'id': row['id'],
-        'completedAt': row['completed_at'] != null 
-            ? DateTime.fromMillisecondsSinceEpoch(row['completed_at'] as int).toIso8601String()
+        'completedAt': row['completed_at'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                row['completed_at'] as int,
+              ).toIso8601String()
             : null,
       });
     }).toList();
@@ -155,105 +171,88 @@ class HealthRepository {
   Future<void> saveDailyQuest(DailyQuest quest) async {
     final db = await _db.database;
     final now = DateTime.now();
-    
-    await db.insert(
-      'daily_quests',
-      {
-        'id': quest.id,
-        'title': quest.title,
-        'description': quest.description,
-        'xp_reward': quest.xpReward,
-        'target_value': quest.targetValue,
-        'current_value': quest.currentValue,
-        'quest_type': quest.questType.name,
-        'completed_at': quest.completedAt?.millisecondsSinceEpoch,
-        'created_at': now.millisecondsSinceEpoch,
-        'ciphertext': _db.encryptJson(quest.toJson()),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+
+    await db.insert('daily_quests', {
+      'id': quest.id,
+      'title': quest.title,
+      'description': quest.description,
+      'xp_reward': quest.xpReward,
+      'target_value': quest.targetValue,
+      'current_value': quest.currentValue,
+      'quest_type': quest.questType.name,
+      'completed_at': quest.completedAt?.millisecondsSinceEpoch,
+      'created_at': now.millisecondsSinceEpoch,
+      'ciphertext': _db.encryptJson(quest.toJson()),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Exercise>> loadExercises() async {
     final db = await _db.database;
     final rows = await db.query('exercises', orderBy: 'name ASC');
-    
+
     return rows.map((row) {
       final payload = _db.decryptJson(row['ciphertext'] as String);
-      return Exercise.fromJson({
-        ...payload,
-        'id': row['id'],
-      });
+      return Exercise.fromJson({...payload, 'id': row['id']});
     }).toList();
   }
 
   Future<void> saveExercise(Exercise exercise) async {
     final db = await _db.database;
-    
-    await db.insert(
-      'exercises',
-      {
-        'id': exercise.id,
-        'name': exercise.name,
-        'category': exercise.category.name,
-        'muscle_groups': exercise.muscleGroups.join(','),
-        'equipment': exercise.equipment,
-        'difficulty': exercise.difficulty.name,
-        'is_premium': exercise.isPremium ? 1 : 0,
-        'media_url': exercise.mediaUrl,
-        'instructions': exercise.instructions,
-        'ciphertext': _db.encryptJson(exercise.toJson()),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+
+    await db.insert('exercises', {
+      'id': exercise.id,
+      'name': exercise.name,
+      'category': exercise.category.name,
+      'muscle_groups': exercise.muscleGroups.join(','),
+      'equipment': exercise.equipment,
+      'difficulty': exercise.difficulty.name,
+      'is_premium': exercise.isPremium ? 1 : 0,
+      'media_url': exercise.mediaUrl,
+      'instructions': exercise.instructions,
+      'ciphertext': _db.encryptJson(exercise.toJson()),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Routine>> loadRoutines() async {
     final db = await _db.database;
     final rows = await db.query('routines', orderBy: 'created_at DESC');
-    
+
     return rows.map((row) {
       final payload = _db.decryptJson(row['ciphertext'] as String);
       return Routine.fromJson({
         ...payload,
         'id': row['id'],
-        'createdAt': DateTime.fromMillisecondsSinceEpoch(row['created_at'] as int).toIso8601String(),
+        'createdAt': DateTime.fromMillisecondsSinceEpoch(
+          row['created_at'] as int,
+        ).toIso8601String(),
       });
     }).toList();
   }
 
   Future<void> saveRoutine(Routine routine) async {
     final db = await _db.database;
-    
-    await db.insert(
-      'routines',
-      {
-        'id': routine.id,
-        'name': routine.name,
-        'description': routine.description,
-        'is_premium': routine.isPremium ? 1 : 0,
-        'created_at': routine.createdAt.millisecondsSinceEpoch,
-        'ciphertext': _db.encryptJson(routine.toJson()),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    
+
+    await db.insert('routines', {
+      'id': routine.id,
+      'name': routine.name,
+      'description': routine.description,
+      'is_premium': routine.isPremium ? 1 : 0,
+      'created_at': routine.createdAt.millisecondsSinceEpoch,
+      'ciphertext': _db.encryptJson(routine.toJson()),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+
     for (var i = 0; i < routine.exerciseIds.length; i++) {
       final exerciseId = routine.exerciseIds[i];
-      await db.insert(
-        'routine_exercises',
-        {
-          'routine_id': routine.id,
-          'exercise_id': exerciseId,
-          'order_index': i,
-          'ciphertext': _db.encryptJson({
-            'routineId': routine.id,
-            'exerciseId': exerciseId,
-            'orderIndex': i,
-          }),
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      await db.insert('routine_exercises', {
+        'routine_id': routine.id,
+        'exercise_id': exerciseId,
+        'order_index': i,
+        'ciphertext': _db.encryptJson({
+          'routineId': routine.id,
+          'exerciseId': exerciseId,
+          'orderIndex': i,
+        }),
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
   }
 
@@ -265,10 +264,12 @@ class HealthRepository {
       whereArgs: [routineId],
       orderBy: 'order_index ASC',
     );
-    
-    final exerciseIds = rows.map((row) => row['exercise_id'] as String).toList();
+
+    final exerciseIds = rows
+        .map((row) => row['exercise_id'] as String)
+        .toList();
     final allExercises = await loadExercises();
-    
+
     return allExercises.where((ex) => exerciseIds.contains(ex.id)).toList();
   }
 
