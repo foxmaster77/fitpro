@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../state/app_session.dart';
 import '../../theme/app_colors.dart';
@@ -73,8 +74,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-                  width: 116,
-                  height: 116,
+                  width: 148,
+                  height: 148,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.electric, width: 2),
@@ -85,10 +86,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.bolt,
-                    color: AppColors.lime,
-                    size: 54,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Lottie.asset(
+                      'gymanimation/Weightlifting competition.lottie',
+                      fit: BoxFit.contain,
+                      repeat: true,
+                    ),
                   ),
                 )
                 .animate()
