@@ -31,8 +31,65 @@
 
   <title>fitpro</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    #fitpro-web-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #05070d;
+      transition: opacity 180ms ease;
+    }
+
+    #fitpro-web-loader.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader {
+      width: 35px;
+      height: 80px;
+      position: relative;
+    }
+
+    .loader:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 3px 5px;
+      border-top: 1px solid #bbb6aa;
+      border-bottom: 4px solid #bbb6aa;
+      background:
+        linear-gradient(#612329 0 0) bottom no-repeat content-box,
+        #e4e0d7;
+      mix-blend-mode: darken;
+      animation: l1 1.5s infinite linear;
+    }
+
+    .loader:before {
+      content: "";
+      position: absolute;
+      inset: -18px calc(50% - 2px) 8px;
+      background: #eb6b3e;
+      transform-origin: bottom;
+      transform: rotate(8deg);
+    }
+
+    @keyframes l1 {
+      0% { background-size: 100% 100%; }
+      100% { background-size: 100% 5%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .loader:after { animation: none; }
+    }
+  </style>
 </head>
 <body>
+  <div id="fitpro-web-loader" aria-label="Loading FITPRO">
+    <div class="loader"></div>
+  </div>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -42,5 +99,13 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    window.setTimeout(function () {
+      var loader = document.getElementById('fitpro-web-loader');
+      if (!loader) return;
+      loader.classList.add('is-hidden');
+      window.setTimeout(function () { loader.remove(); }, 220);
+    }, 1500);
+  </script>
 </body>
 </html>
