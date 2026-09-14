@@ -55,7 +55,9 @@ class _TelehealthScreenState extends ConsumerState<TelehealthScreen> {
                           routine.title,
                           style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
-                        subtitle: Text('${routine.area} · ${routine.minutes} min'),
+                        subtitle: Text(
+                          '${routine.area} · ${routine.minutes} min',
+                        ),
                         trailing: Icon(
                           open ? Icons.expand_less : Icons.expand_more,
                           color: AppColors.lime,
@@ -72,7 +74,10 @@ class _TelehealthScreenState extends ConsumerState<TelehealthScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('▸  ', style: TextStyle(color: AppColors.electric)),
+                                const Text(
+                                  '▸  ',
+                                  style: TextStyle(color: AppColors.electric),
+                                ),
                                 Expanded(child: Text(cue)),
                               ],
                             ),
@@ -120,7 +125,10 @@ class _TelehealthScreenState extends ConsumerState<TelehealthScreen> {
                   if (!pro)
                     GhostButton(
                       label: 'AI Pro required — view plans',
-                      onPressed: () => context.push('/paywall'),
+                      onPressed: () => context.push(
+                        '/paywall',
+                        extra: computePaywallReason(data.readiness, data.plan),
+                      ),
                     )
                   else
                     NeonButton(

@@ -9,10 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/controls.dart';
 
 class ExerciseDetailScreen extends ConsumerWidget {
-  const ExerciseDetailScreen({
-    super.key,
-    required this.exerciseId,
-  });
+  const ExerciseDetailScreen({super.key, required this.exerciseId});
 
   final String exerciseId;
 
@@ -20,13 +17,13 @@ class ExerciseDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(appSessionProvider).valueOrNull;
     if (session == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final library = ref.watch(exerciseLibraryServiceProvider);
-    final hasAiPro = ref.watch(aiProEntitlementProvider).maybeWhen(
+    final hasAiPro = ref
+        .watch(aiProEntitlementProvider)
+        .maybeWhen(
           data: (active) => active,
           orElse: () => session.subscription.isAiPro,
         );
@@ -78,8 +75,9 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: _getCategoryColor(exercise.category)
-                                .withValues(alpha: 0.2),
+                            color: _getCategoryColor(
+                              exercise.category,
+                            ).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _getCategoryColor(exercise.category),
@@ -101,8 +99,9 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: _getDifficultyColor(exercise.difficulty)
-                                .withValues(alpha: 0.2),
+                            color: _getDifficultyColor(
+                              exercise.difficulty,
+                            ).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _getDifficultyColor(exercise.difficulty),
@@ -121,7 +120,9 @@ class ExerciseDetailScreen extends ConsumerWidget {
                         if (isPremium)
                           Icon(
                             Icons.workspace_premium,
-                            color: isProUser ? AppColors.lime : AppColors.danger,
+                            color: isProUser
+                                ? AppColors.lime
+                                : AppColors.danger,
                             size: 20,
                           ),
                       ],
@@ -151,11 +152,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                   accent: AppColors.danger,
                   child: Column(
                     children: [
-                      const Icon(
-                        Icons.lock,
-                        size: 48,
-                        color: AppColors.danger,
-                      ),
+                      const Icon(Icons.lock, size: 48, color: AppColors.danger),
                       const SizedBox(height: 16),
                       const Text(
                         'AI Pro Feature',
@@ -178,7 +175,13 @@ class ExerciseDetailScreen extends ConsumerWidget {
                       NeonButton(
                         label: 'Upgrade to AI Pro',
                         icon: Icons.workspace_premium,
-                        onPressed: () => context.push('/paywall'),
+                        onPressed: () => context.push(
+                          '/paywall',
+                          extra: computePaywallReason(
+                            session.readiness,
+                            session.plan,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -305,7 +308,8 @@ class ExerciseDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              if (exercise.instructions != null && exercise.instructions!.isNotEmpty)
+              if (exercise.instructions != null &&
+                  exercise.instructions!.isNotEmpty)
                 GlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

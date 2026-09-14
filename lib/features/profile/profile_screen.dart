@@ -25,8 +25,13 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              data.subscription.isAiPro ? 'AI Pro member' : 'Core (free) member',
-              style: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w700),
+              data.subscription.isAiPro
+                  ? 'AI Pro member'
+                  : 'Core (free) member',
+              style: const TextStyle(
+                color: AppColors.lime,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 20),
             GlassCard(
@@ -41,10 +46,7 @@ class ProfileScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: [
-                              AppColors.lime,
-                              AppColors.limeDeep,
-                            ],
+                            colors: [AppColors.lime, AppColors.limeDeep],
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -147,7 +149,10 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             NeonButton(
               label: data.subscription.isAiPro ? 'Manage AI Pro' : 'See AI Pro',
-              onPressed: () => context.push('/paywall'),
+              onPressed: () => context.push(
+                '/paywall',
+                extra: computePaywallReason(data.readiness, data.plan),
+              ),
             ),
             const SizedBox(height: 12),
             const Text(

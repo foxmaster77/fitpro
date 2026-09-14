@@ -46,6 +46,16 @@ final aiProEntitlementProvider = StreamProvider<bool>((ref) {
   return ref.watch(exerciseLibraryServiceProvider).watchAiProEntitlement();
 });
 
+String? computePaywallReason(ReadinessSnapshot readiness, AiWorkoutPlan? plan) {
+  if (plan?.injuryFlags.isNotEmpty == true) {
+    return plan!.injuryFlags.first;
+  }
+  if (readiness.dailyReadiness < 45) {
+    return 'Your readiness is ${readiness.dailyReadiness}. AI Pro can adapt today\'s session for recovery.';
+  }
+  return null;
+}
+
 class AppSession {
   const AppSession({
     required this.profile,

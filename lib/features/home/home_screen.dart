@@ -40,6 +40,45 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                   GlassCard(
+                    accent: AppColors.lime,
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Level ${data.profile.userLevel}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${data.profile.userXp % 100} / 100 XP',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 9),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(99),
+                          child: LinearProgressIndicator(
+                            minHeight: 7,
+                            value: (data.profile.userXp % 100) / 100,
+                            color: AppColors.lime,
+                            backgroundColor: AppColors.surfaceMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  GlassCard(
                     child: Column(
                       children: [
                         ReadinessRing(
@@ -98,15 +137,13 @@ class HomeScreen extends ConsumerWidget {
                                   .read(appSessionProvider)
                                   .valueOrNull
                                   ?.plan;
+                              final reason = computePaywallReason(
+                                readiness,
+                                plan,
+                              );
                               if (context.mounted &&
                                   !data.subscription.isAiPro &&
-                                  (readiness.dailyReadiness < 45 ||
-                                      (plan?.injuryFlags.isNotEmpty ??
-                                          false))) {
-                                final reason =
-                                    plan?.injuryFlags.isNotEmpty == true
-                                    ? plan!.injuryFlags.first
-                                    : 'Your readiness is ${readiness.dailyReadiness}. AI Pro can adapt today\'s session for recovery.';
+                                  reason != null) {
                                 context.push('/paywall', extra: reason);
                               }
                             } finally {
@@ -193,7 +230,13 @@ class HomeScreen extends ConsumerWidget {
                             ),
                           ] else
                             TextButton(
-                              onPressed: () => context.push('/paywall'),
+                              onPressed: () => context.push(
+                                '/paywall',
+                                extra: computePaywallReason(
+                                  readiness,
+                                  data.plan,
+                                ),
+                              ),
                               child: Text(
                                 data.plan!.injuryFlags.isNotEmpty
                                     ? 'Review this injury precaution with AI Pro'
