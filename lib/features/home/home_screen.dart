@@ -39,42 +39,45 @@ class HomeScreen extends ConsumerWidget {
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 20),
-                  GlassCard(
-                    accent: AppColors.lime,
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Level ${data.profile.userLevel}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
+                  Hero(
+                    tag: 'xp-level-card',
+                    child: GlassCard(
+                      accent: AppColors.lime,
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Level ${data.profile.userLevel}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '${data.profile.userXp % 100} / 100 XP',
-                              style: const TextStyle(
-                                color: AppColors.textMuted,
-                                fontSize: 12,
+                              const Spacer(),
+                              Text(
+                                '${data.profile.userXp % 100} / 100 XP',
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 9),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(99),
-                          child: LinearProgressIndicator(
-                            minHeight: 7,
-                            value: (data.profile.userXp % 100) / 100,
-                            color: AppColors.lime,
-                            backgroundColor: AppColors.surfaceMuted,
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 9),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(99),
+                            child: LinearProgressIndicator(
+                              minHeight: 7,
+                              value: (data.profile.userXp % 100) / 100,
+                              color: AppColors.lime,
+                              backgroundColor: AppColors.surfaceMuted,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -290,18 +293,47 @@ class HomeScreen extends ConsumerWidget {
                               ),
                             ),
                           ] else
-                            TextButton(
-                              onPressed: () => context.push(
-                                '/paywall',
-                                extra: computePaywallReason(
-                                  readiness,
-                                  data.plan,
+                            Hero(
+                              tag: 'paywall-trigger-warning',
+                              child: GlassCard(
+                                accent: AppColors.warning,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
                                 ),
-                              ),
-                              child: Text(
-                                data.plan!.injuryFlags.isNotEmpty
-                                    ? 'Review this injury precaution with AI Pro'
-                                    : 'Unlock injury forecasts with AI Pro',
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.shield_moon,
+                                      color: AppColors.warning,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        computePaywallReason(
+                                              readiness,
+                                              data.plan,
+                                            ) ??
+                                            'Predictive injury analysis is available with AI Pro.',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        final reason =
+                                            computePaywallReason(
+                                              readiness,
+                                              data.plan,
+                                            ) ??
+                                            'Predictive injury analysis is available with AI Pro.';
+                                        context.push('/paywall', extra: reason);
+                                      },
+                                      child: const Text('Review'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                         ],

@@ -10,6 +10,7 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/paywall/paywall_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/routine_builder/routine_builder_screen.dart';
+import 'features/splash/splash_screen.dart';
 import 'features/telehealth/telehealth_screen.dart';
 import 'features/workout/workout_screen.dart';
 import 'state/app_session.dart';
@@ -22,11 +23,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
-    initialLocation: '/coach',
+    initialLocation: '/splash',
     refreshListenable: refresh,
     redirect: (context, state) {
       final session = ref.read(appSessionProvider);
       final loc = state.matchedLocation;
+      if (loc == '/splash') return null;
       if (session.isLoading || session.hasError) {
         if (loc != '/boot') return '/boot';
         return null;
@@ -39,6 +41,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(path: '/boot', builder: (context, state) => const _BootScreen()),
       GoRoute(
         path: '/onboarding',

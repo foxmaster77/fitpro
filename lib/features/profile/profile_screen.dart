@@ -34,92 +34,95 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            GlassCard(
-              accent: AppColors.lime,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [AppColors.lime, AppColors.limeDeep],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.lime.withValues(alpha: 0.4),
-                              blurRadius: 20,
+            Hero(
+              tag: 'xp-level-card',
+              child: GlassCard(
+                accent: AppColors.lime,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [AppColors.lime, AppColors.limeDeep],
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            'LVL ${data.profile.userLevel}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Experience Points',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textMuted,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.lime.withValues(alpha: 0.4),
+                                blurRadius: 20,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${data.profile.userXp} XP',
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              'LVL ${data.profile.userLevel}',
                               style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.lime,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: FractionallySizedBox(
-                      widthFactor: (data.profile.userXp % 100) / 100,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.lime, AppColors.limeDeep],
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Experience Points',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${data.profile.userXp} XP',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.lime,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceMuted,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: FractionallySizedBox(
+                        widthFactor: (data.profile.userXp % 100) / 100,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.lime, AppColors.limeDeep],
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${100 - (data.profile.userXp % 100)} XP to next level',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
+                    const SizedBox(height: 8),
+                    Text(
+                      '${100 - (data.profile.userXp % 100)} XP to next level',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),

@@ -38,20 +38,23 @@ class PaywallScreen extends ConsumerWidget {
           ),
           if (triggerReason != null) ...[
             const SizedBox(height: 12),
-            GlassCard(
-              accent: AppColors.warning,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.shield_moon, color: AppColors.warning),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      triggerReason!,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+            Hero(
+              tag: 'paywall-trigger-warning',
+              child: GlassCard(
+                accent: AppColors.warning,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.shield_moon, color: AppColors.warning),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        triggerReason!,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

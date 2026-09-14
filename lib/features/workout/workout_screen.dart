@@ -121,7 +121,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen>
                     weight: _weight,
                     logs: data.lifts,
                     onLog: () async {
-                      await ref.read(appSessionProvider.notifier).logLift(
+                      await ref
+                          .read(appSessionProvider.notifier)
+                          .logLift(
                             exercise: _exercise.text,
                             sets: int.tryParse(_sets.text) ?? 3,
                             reps: int.tryParse(_reps.text) ?? 8,
@@ -135,7 +137,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen>
                     minutes: _minutes,
                     logs: data.runs,
                     onLog: () async {
-                      await ref.read(appSessionProvider.notifier).logRun(
+                      await ref
+                          .read(appSessionProvider.notifier)
+                          .logRun(
                             distanceKm: double.tryParse(_distance.text) ?? 0,
                             minutes: int.tryParse(_minutes.text) ?? 0,
                           );
@@ -148,7 +152,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen>
                     logs: data.calories,
                     profile: data.profile,
                     onLog: () async {
-                      await ref.read(appSessionProvider.notifier).logCalories(
+                      await ref
+                          .read(appSessionProvider.notifier)
+                          .logCalories(
                             calories: int.tryParse(_calories.text) ?? 0,
                             note: _note.text,
                           );
@@ -184,51 +190,90 @@ class _LiftTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fmt = DateFormat.jm();
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
         GlassCard(
           child: Column(
             children: [
-              TextField(controller: exercise, decoration: const InputDecoration(hintText: 'Exercise')),
+              TextField(
+                controller: exercise,
+                decoration: const InputDecoration(hintText: 'Exercise'),
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Expanded(child: TextField(controller: sets, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'Sets'))),
+                  Expanded(
+                    child: TextField(
+                      controller: sets,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(hintText: 'Sets'),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: reps, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'Reps'))),
+                  Expanded(
+                    child: TextField(
+                      controller: reps,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(hintText: 'Reps'),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: weight, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'kg'))),
+                  Expanded(
+                    child: TextField(
+                      controller: weight,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(hintText: 'kg'),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
-              NeonButton(label: 'Log set', icon: Icons.check, lime: true, onPressed: onLog),
+              NeonButton(
+                label: 'Log set',
+                icon: Icons.check,
+                lime: true,
+                onPressed: onLog,
+              ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        ...logs.map((e) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: GlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  const Icon(Icons.fitness_center, color: AppColors.electric),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${e.exercise}  ${e.sets}×${e.reps} @ ${e.weightKg}kg',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+        if (logs.isEmpty)
+          const _HistoryEmpty(
+            message: 'No lifts logged yet — your first set will show up here.',
+          )
+        else
+          ...logs.map((e) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.fitness_center, color: AppColors.electric),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${e.exercise}  ${e.sets}×${e.reps} @ ${e.weightKg}kg',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ),
-                  Text(fmt.format(e.completedAt), style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                ],
-              ),
-            ).animate().fadeIn(duration: 280.ms).slideX(begin: 0.04),
-          );
-        }),
+                    Text(
+                      _relativeTimestamp(e.completedAt),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 280.ms).slideX(begin: 0.04),
+            );
+          }),
       ],
     );
   }
@@ -249,7 +294,6 @@ class _RunTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fmt = DateFormat.jm();
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
@@ -259,38 +303,72 @@ class _RunTab extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: TextField(controller: distance, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(hintText: 'Distance km'))),
+                  Expanded(
+                    child: TextField(
+                      controller: distance,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Distance km',
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: minutes, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'Time min'))),
+                  Expanded(
+                    child: TextField(
+                      controller: minutes,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(hintText: 'Time min'),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
-              NeonButton(label: 'Log run', icon: Icons.directions_run, onPressed: onLog),
+              NeonButton(
+                label: 'Log run',
+                icon: Icons.directions_run,
+                onPressed: onLog,
+              ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        ...logs.map((e) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: GlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  const Icon(Icons.directions_run, color: AppColors.lime),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${e.distanceKm} km · ${e.minutes} min',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+        if (logs.isEmpty)
+          const _HistoryEmpty(
+            message: 'No runs logged yet — your first route will show up here.',
+          )
+        else
+          ...logs.map((e) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.directions_run, color: AppColors.lime),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${e.distanceKm} km · ${e.minutes} min',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ),
-                  Text(fmt.format(e.completedAt), style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                ],
+                    Text(
+                      _relativeTimestamp(e.completedAt),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
       ],
     );
   }
@@ -312,25 +390,25 @@ class _CalorieTab extends StatelessWidget {
   final VoidCallback onLog;
 
   int _calculateTdee(UserProfile profile) {
-    if (profile.heightCm == null || 
-        profile.weightKg == null || 
-        profile.age == null || 
+    if (profile.heightCm == null ||
+        profile.weightKg == null ||
+        profile.age == null ||
         profile.gender == null) {
       return 2000;
     }
-    
+
     final weight = profile.weightKg!;
     final height = profile.heightCm!;
     final age = profile.age!;
     final gender = profile.gender!;
-    
+
     double bmr;
     if (gender.toLowerCase() == 'male') {
       bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
     } else {
       bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
     }
-    
+
     final activityMultiplier = 1.2;
     return (bmr * activityMultiplier).round();
   }
@@ -338,7 +416,7 @@ class _CalorieTab extends StatelessWidget {
   int _calculateTargetCalories(UserProfile profile) {
     final tdee = _calculateTdee(profile);
     final goal = profile.fitnessGoal?.toLowerCase() ?? 'maintain';
-    
+
     switch (goal) {
       case 'lose':
         return (tdee * 0.85).round();
@@ -351,11 +429,13 @@ class _CalorieTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = logs.where((e) {
-      final d = e.loggedAt;
-      final n = DateTime.now();
-      return d.year == n.year && d.month == n.month && d.day == n.day;
-    }).fold<int>(0, (sum, e) => sum + e.calories);
+    final today = logs
+        .where((e) {
+          final d = e.loggedAt;
+          final n = DateTime.now();
+          return d.year == n.year && d.month == n.month && d.day == n.day;
+        })
+        .fold<int>(0, (sum, e) => sum + e.calories);
 
     final targetCalories = _calculateTargetCalories(profile);
     final progress = (today / targetCalories).clamp(0.0, 1.0);
@@ -379,8 +459,8 @@ class _CalorieTab extends StatelessWidget {
                         painter: _CalorieProgressPainter(
                           progress: progress,
                           backgroundColor: AppColors.surfaceMuted,
-                          progressColor: progress >= 1.0 
-                              ? AppColors.lime 
+                          progressColor: progress >= 1.0
+                              ? AppColors.lime
                               : AppColors.electric,
                         ),
                       ),
@@ -405,14 +485,14 @@ class _CalorieTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          remaining > 0 
-                              ? '$remaining remaining' 
+                          remaining > 0
+                              ? '$remaining remaining'
                               : '${remaining.abs()} over',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: remaining > 0 
-                                ? AppColors.success 
+                            color: remaining > 0
+                                ? AppColors.success
                                 : AppColors.warning,
                           ),
                         ),
@@ -426,7 +506,10 @@ class _CalorieTab extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceElevated,
                       borderRadius: BorderRadius.circular(12),
@@ -451,46 +534,93 @@ class _CalorieTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
-                controller: calories, 
-                keyboardType: TextInputType.number, 
-                decoration: const InputDecoration(hintText: 'Calories')
+                controller: calories,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Calories'),
               ),
               const SizedBox(height: 10),
-              TextField(controller: note, decoration: const InputDecoration(hintText: 'Meal note')),
+              TextField(
+                controller: note,
+                decoration: const InputDecoration(hintText: 'Meal note'),
+              ),
               const SizedBox(height: 14),
               NeonButton(
-                label: 'Log fuel', 
-                icon: Icons.local_fire_department, 
-                lime: true, 
-                onPressed: onLog
+                label: 'Log fuel',
+                icon: Icons.local_fire_department,
+                lime: true,
+                onPressed: onLog,
               ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        ...logs.map((e) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: GlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  const Icon(Icons.local_fire_department, color: AppColors.warning),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${e.calories} kcal  ${e.note}',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+        if (logs.isEmpty)
+          const _HistoryEmpty(
+            message: 'No fuel logged yet — your first meal will show up here.',
+          )
+        else
+          ...logs.map((e) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department,
+                      color: AppColors.warning,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${e.calories} kcal  ${e.note}',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    Text(
+                      _relativeTimestamp(e.loggedAt),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
       ],
     );
   }
+}
+
+class _HistoryEmpty extends StatelessWidget {
+  const _HistoryEmpty({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      child: Text(message, style: const TextStyle(color: AppColors.textMuted)),
+    );
+  }
+}
+
+String _relativeTimestamp(DateTime timestamp) {
+  final now = DateTime.now();
+  final date = timestamp.toLocal();
+  final today = DateTime(now.year, now.month, now.day);
+  final entryDay = DateTime(date.year, date.month, date.day);
+  final daysAgo = today.difference(entryDay).inDays;
+  final time = DateFormat.jm().format(date);
+  if (daysAgo == 0) return 'Today, $time';
+  if (daysAgo == 1) return 'Yesterday';
+  return DateFormat('MMM d, y').format(date);
 }
 
 class _CalorieProgressPainter extends CustomPainter {
@@ -534,14 +664,14 @@ class _CalorieProgressPainter extends CustomPainter {
         false,
         progressPaint,
       );
-      
+
       if (progress >= 1.0) {
         final glowPaint = Paint()
           ..color = progressColor.withValues(alpha: 0.3)
           ..strokeWidth = strokeWidth + 8
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round;
-        
+
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: radius),
           -math.pi / 2,
