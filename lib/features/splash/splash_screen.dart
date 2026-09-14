@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../state/app_session.dart';
 import '../../theme/app_colors.dart';
@@ -73,28 +72,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-                  width: 148,
-                  height: 148,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.electric, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.electric.withValues(alpha: 0.35),
-                        blurRadius: 32,
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Lottie.asset(
-                      'gymanimation/Weightlifting competition.lottie',
-                      fit: BoxFit.contain,
-                      repeat: true,
-                    ),
-                  ),
-                )
+            const _CssLoader()
                 .animate()
                 .fadeIn(duration: 300.ms)
                 .scale(begin: const Offset(0.72, 0.72), duration: 500.ms)
@@ -115,4 +93,98 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       ),
     );
   }
+}
+
+class _CssLoader extends StatefulWidget {
+  const _CssLoader();
+
+  @override
+  State<_CssLoader> createState() => _CssLoaderState();
+}
+
+class _CssLoaderState extends State<_CssLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = MediaQuery.of(context).disableAnimations;
+    return SizedBox(
+      width: 35,
+      height: 80,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) => CustomPaint(
+          painter: _CssLoaderPainter(
+            progress: disabled ? 0 : _controller.value,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CssLoaderPainter extends CustomPainter {
+  const _CssLoaderPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const bodyColor = Color(0xFFE4E0D7);
+    const borderColor = Color(0xFFBBB6AA);
+    const fillColor = Color(0xFF612329);
+    const barColor = Color(0xFFEB6B3E);
+
+    final body = Paint()..color = bodyColor;
+    canvas.drawRect(Offset.zero & size, body);
+
+    final fillHeight = size.height * (1 - progress * 0.95);
+    final fill = Paint()..color = fillColor;
+    canvas.drawRect(
+      Rect.fromLTWH(5, size.height - fillHeight, size.width - 10, fillHeight),
+      fill,
+    );
+
+    final border = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawLine(const Offset(0, 0.5), Offset(size.width, 0.5), border);
+    border.strokeWidth = 4;
+    canvas.drawLine(
+      Offset(0, size.height - 2),
+      Offset(size.width, size.height - 2),
+      border,
+    );
+
+    final bar = Paint()
+      ..color = barColor
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.square;
+    canvas.save();
+    canvas.translate(size.width / 2, size.height - 8);
+    canvas.rotate(8 * 3.1415926535 / 180);
+    canvas.drawLine(const Offset(0, 0), const Offset(0, -90), bar);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _CssLoaderPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
