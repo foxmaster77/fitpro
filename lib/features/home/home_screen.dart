@@ -45,7 +45,10 @@ class HomeScreen extends ConsumerWidget {
                         ReadinessRing(
                           score: readiness.dailyReadiness,
                           label: readiness.label,
-                        ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+                        ).animate().scale(
+                          duration: 500.ms,
+                          curve: Curves.easeOutBack,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Sleep ${readiness.sleepScore}  ·  Fatigue ${readiness.muscleFatigue}',
@@ -85,13 +88,31 @@ class HomeScreen extends ConsumerWidget {
                     onPressed: generating
                         ? null
                         : () async {
-                            ref.read(generatingWorkoutProvider.notifier).state = true;
+                            ref.read(generatingWorkoutProvider.notifier).state =
+                                true;
                             try {
                               await ref
                                   .read(appSessionProvider.notifier)
                                   .generateWorkout();
+                              final plan = ref
+                                  .read(appSessionProvider)
+                                  .valueOrNull
+                                  ?.plan;
+                              if (context.mounted &&
+                                  !data.subscription.isAiPro &&
+                                  (readiness.dailyReadiness < 45 ||
+                                      (plan?.injuryFlags.isNotEmpty ??
+                                          false))) {
+                                final reason =
+                                    plan?.injuryFlags.isNotEmpty == true
+                                    ? plan!.injuryFlags.first
+                                    : 'Your readiness is ${readiness.dailyReadiness}. AI Pro can adapt today\'s session for recovery.';
+                                context.push('/paywall', extra: reason);
+                              }
                             } finally {
-                              ref.read(generatingWorkoutProvider.notifier).state =
+                              ref
+                                      .read(generatingWorkoutProvider.notifier)
+                                      .state =
                                   false;
                             }
                           },
@@ -132,11 +153,15 @@ class HomeScreen extends ConsumerWidget {
                           ...data.plan!.blocks.map(
                             (b) => ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.play_circle_fill,
-                                  color: AppColors.electric),
+                              leading: const Icon(
+                                Icons.play_circle_fill,
+                                color: AppColors.electric,
+                              ),
                               title: Text(
                                 b.title,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               subtitle: Text(b.detail),
                               trailing: Text('${b.minutes}m'),
@@ -155,8 +180,11 @@ class HomeScreen extends ConsumerWidget {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(Icons.shield_moon,
-                                        color: AppColors.warning, size: 18),
+                                    const Icon(
+                                      Icons.shield_moon,
+                                      color: AppColors.warning,
+                                      size: 18,
+                                    ),
                                     const SizedBox(width: 8),
                                     Expanded(child: Text(f)),
                                   ],
@@ -166,8 +194,10 @@ class HomeScreen extends ConsumerWidget {
                           ] else
                             TextButton(
                               onPressed: () => context.push('/paywall'),
-                              child: const Text(
-                                'Unlock injury forecasts with AI Pro',
+                              child: Text(
+                                data.plan!.injuryFlags.isNotEmpty
+                                    ? 'Review this injury precaution with AI Pro'
+                                    : 'Unlock injury forecasts with AI Pro',
                               ),
                             ),
                         ],
@@ -187,8 +217,8 @@ class HomeScreen extends ConsumerWidget {
     final part = hour < 12
         ? 'Good morning'
         : hour < 17
-            ? 'Good afternoon'
-            : 'Good evening';
+        ? 'Good afternoon'
+        : 'Good evening';
     return '$part, $name';
   }
 }

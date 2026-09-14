@@ -158,14 +158,15 @@ class AppSessionController extends AsyncNotifier<AppSession> {
     final current = state.valueOrNull;
     if (current == null) return;
     await _repo.saveRoutine(routine);
-    state = AsyncData(
-      current.copyWith(routines: await _repo.loadRoutines()),
-    );
+    state = AsyncData(current.copyWith(routines: await _repo.loadRoutines()));
   }
 
   String generateId() => _repo.generateUuid();
 
-  Future<void> completeOnboarding(String name) async {
+  Future<void> completeOnboarding(
+    String name, {
+    List<String> injuryHistory = const [],
+  }) async {
     final current = state.valueOrNull;
     if (current == null) return;
     final profile = current.profile.copyWith(
@@ -173,6 +174,7 @@ class AppSessionController extends AsyncNotifier<AppSession> {
       onboardingComplete: true,
       acceptedPrivacy: true,
       localEncryptionEnabled: true,
+      injuryHistory: injuryHistory,
     );
     await _repo.saveProfile(profile);
     state = AsyncData(current.copyWith(profile: profile));
@@ -192,10 +194,9 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> generateWorkout() async {
     final current = state.valueOrNull;
     if (current == null) return;
-    final plan = await ref.read(aiCoachServiceProvider).generate(
-          readiness: current.readiness,
-          profile: current.profile,
-        );
+    final plan = await ref
+        .read(aiCoachServiceProvider)
+        .generate(readiness: current.readiness, profile: current.profile);
     await _repo.savePlan(plan);
     state = AsyncData(current.copyWith(plan: plan));
   }
@@ -257,19 +258,19 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> _awardXpForWorkout() async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
+
     final xpGain = 50;
     final newXp = current.profile.userXp + xpGain;
     final newLevel = LevelConfig.levelFromXp(newXp);
-    
+
     final profile = current.profile.copyWith(
       userXp: newXp,
       userLevel: newLevel,
     );
-    
+
     await _repo.saveProfile(profile);
     await _updateDailyQuestForWorkout();
-    
+
     final leveledUp = newLevel > current.profile.userLevel;
     state = AsyncData(current.copyWith(profile: profile));
   }
@@ -277,27 +278,27 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> _awardXpForCalories(int calories) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
+
     final dailyCalories = current.calories
         .where((log) => log.loggedAt.day == DateTime.now().day)
         .fold<int>(0, (sum, log) => sum + log.calories);
-    
+
     final totalDailyCalories = dailyCalories + calories;
     final calorieGoal = _calculateTdee(current.profile);
-    
+
     if (totalDailyCalories >= calorieGoal && dailyCalories < calorieGoal) {
       final xpGain = 30;
       final newXp = current.profile.userXp + xpGain;
       final newLevel = LevelConfig.levelFromXp(newXp);
-      
+
       final profile = current.profile.copyWith(
         userXp: newXp,
         userLevel: newLevel,
       );
-      
+
       await _repo.saveProfile(profile);
       await _updateDailyQuestForCalories();
-      
+
       state = AsyncData(current.copyWith(profile: profile));
     }
   }
@@ -305,19 +306,19 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> _updateDailyQuestForWorkout() async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
+
     final workoutQuest = current.dailyQuests.firstWhere(
       (q) => q.questType == QuestType.workout && !q.isCompleted,
       orElse: () => _createWorkoutQuest(),
     );
-    
+
     final updatedQuest = workoutQuest.copyWith(
       currentValue: workoutQuest.currentValue + 1,
       completedAt: workoutQuest.currentValue + 1 >= workoutQuest.targetValue
           ? DateTime.now()
           : null,
     );
-    
+
     await _repo.saveDailyQuest(updatedQuest);
     await _reloadQuests();
   }
@@ -325,19 +326,19 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> _updateDailyQuestForCalories() async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
+
     final calorieQuest = current.dailyQuests.firstWhere(
       (q) => q.questType == QuestType.calories && !q.isCompleted,
       orElse: () => _createCalorieQuest(),
     );
-    
+
     final updatedQuest = calorieQuest.copyWith(
       currentValue: calorieQuest.currentValue + 1,
       completedAt: calorieQuest.currentValue + 1 >= calorieQuest.targetValue
           ? DateTime.now()
           : null,
     );
-    
+
     await _repo.saveDailyQuest(updatedQuest);
     await _reloadQuests();
   }
@@ -369,25 +370,25 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   }
 
   int _calculateTdee(UserProfile profile) {
-    if (profile.heightCm == null || 
-        profile.weightKg == null || 
-        profile.age == null || 
+    if (profile.heightCm == null ||
+        profile.weightKg == null ||
+        profile.age == null ||
         profile.gender == null) {
       return 2000;
     }
-    
+
     final weight = profile.weightKg!;
     final height = profile.heightCm!;
     final age = profile.age!;
     final gender = profile.gender!;
-    
+
     double bmr;
     if (gender.toLowerCase() == 'male') {
       bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
     } else {
       bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
     }
-    
+
     final activityMultiplier = 1.2;
     return (bmr * activityMultiplier).round();
   }
@@ -409,16 +410,16 @@ class AppSessionController extends AsyncNotifier<AppSession> {
   Future<void> _reloadQuests() async {
     final current = state.valueOrNull;
     if (current == null) return;
-    state = AsyncData(current.copyWith(
-      dailyQuests: await _repo.loadDailyQuests(),
-    ));
+    state = AsyncData(
+      current.copyWith(dailyQuests: await _repo.loadDailyQuests()),
+    );
   }
 }
 
 final appSessionProvider =
     AsyncNotifierProvider<AppSessionController, AppSession>(
-  AppSessionController.new,
-);
+      AppSessionController.new,
+    );
 
 final generatingWorkoutProvider = StateProvider<bool>((ref) => false);
 final logSuccessTickProvider = StateProvider<int>((ref) => 0);

@@ -17,6 +17,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _page = PageController();
   final _name = TextEditingController();
+  final _otherInjury = TextEditingController();
+  final _injuries = <String>{};
   var _index = 0;
   var _accepted = false;
 
@@ -24,11 +26,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void dispose() {
     _page.dispose();
     _name.dispose();
+    _otherInjury.dispose();
     super.dispose();
   }
 
   Future<void> _next() async {
-    if (_index < 2) {
+    if (_index < 3) {
       await _page.nextPage(
         duration: const Duration(milliseconds: 380),
         curve: Curves.easeOutCubic,
@@ -36,7 +39,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
     if (!_accepted) return;
-    await ref.read(appSessionProvider.notifier).completeOnboarding(_name.text);
+    final injuries = {..._injuries};
+    final other = _otherInjury.text.trim();
+    if (other.isNotEmpty) injuries.add(other);
+    await ref
+        .read(appSessionProvider.notifier)
+        .completeOnboarding(_name.text, injuryHistory: injuries.toList());
     if (mounted) context.go('/coach');
   }
 
@@ -60,7 +68,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '${_index + 1} / 3',
+                    '${_index + 1} / 4',
                     style: const TextStyle(color: AppColors.textMuted),
                   ),
                 ],
@@ -73,7 +81,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(99),
                 child: LinearProgressIndicator(
                   minHeight: 6,
-                  value: (_index + 1) / 3,
+                  value: (_index + 1) / 4,
                   color: AppColors.electric,
                   backgroundColor: AppColors.surfaceMuted,
                 ),
@@ -89,6 +97,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     accepted: _accepted,
                     onChanged: (v) => setState(() => _accepted = v),
                   ),
+                  _InjuryPane(
+                    selected: _injuries,
+                    otherController: _otherInjury,
+                    onToggle: (injury) => setState(() {
+                      if (!_injuries.add(injury)) _injuries.remove(injury);
+                    }),
+                  ),
                   _NamePane(controller: _name),
                 ],
               ),
@@ -96,14 +111,77 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
               child: NeonButton(
-                label: _index == 2 ? 'Enter the vault' : 'Continue',
-                onPressed: _index == 2 && !_accepted ? null : _next,
-                lime: _index == 2,
+                label: _index == 3 ? 'Enter the vault' : 'Continue',
+                onPressed: _index == 3 && !_accepted ? null : _next,
+                lime: _index == 3,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _InjuryPane extends StatelessWidget {
+  const _InjuryPane({
+    required this.selected,
+    required this.otherController,
+    required this.onToggle,
+  });
+
+  final Set<String> selected;
+  final TextEditingController otherController;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    const areas = [
+      'Shoulder',
+      'Elbow',
+      'Wrist',
+      'Back',
+      'Hip',
+      'Knee',
+      'Ankle',
+    ];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 8),
+      children: [
+        const Text(
+          'Anything your coach should protect?',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Select current or recurring injuries. FITPRO will use this to avoid risky loading and explain adaptations. Leave blank if none.',
+          style: TextStyle(color: AppColors.textMuted, height: 1.4),
+        ),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: areas
+              .map(
+                (area) => FilterChip(
+                  label: Text(area),
+                  selected: selected.contains(area),
+                  onSelected: (_) => onToggle(area),
+                  selectedColor: AppColors.lime,
+                  checkmarkColor: Colors.black,
+                ),
+              )
+              .toList(),
+        ),
+        const SizedBox(height: 18),
+        TextField(
+          controller: otherController,
+          decoration: const InputDecoration(
+            labelText: 'Other injury or movement to avoid',
+            hintText: 'e.g. plantar fasciitis',
+          ),
+        ),
+      ],
     );
   }
 }
@@ -118,19 +196,33 @@ class _WelcomePane extends StatelessWidget {
         children: [
           const Text(
             'Training that stays with you — without selling you out.',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, height: 1.15),
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              height: 1.15,
+            ),
           ).animate().fadeIn().slideY(begin: 0.12, duration: 500.ms),
           const SizedBox(height: 16),
           const Text(
             'FITPRO is built for retention without subscription fatigue: core logging is free forever. AI Pro is optional.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 16, height: 1.45),
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 16,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 28),
           const _Pill(icon: Icons.offline_bolt, text: 'Works fully offline'),
           const SizedBox(height: 12),
-          const _Pill(icon: Icons.psychology_alt, text: 'Daily readiness, not guilt'),
+          const _Pill(
+            icon: Icons.psychology_alt,
+            text: 'Daily readiness, not guilt',
+          ),
           const SizedBox(height: 12),
-          const _Pill(icon: Icons.merge_type, text: 'Lifts, runs, calories in one log'),
+          const _Pill(
+            icon: Icons.merge_type,
+            text: 'Lifts, runs, calories in one log',
+          ),
         ],
       ),
     );
@@ -239,9 +331,15 @@ class _PrivacyRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+        ),
         const SizedBox(height: 8),
-        Text(body, style: const TextStyle(color: AppColors.textMuted, height: 1.4)),
+        Text(
+          body,
+          style: const TextStyle(color: AppColors.textMuted, height: 1.4),
+        ),
       ],
     );
   }
@@ -261,7 +359,12 @@ class _Pill extends StatelessWidget {
         children: [
           Icon(icon, color: AppColors.electric),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );

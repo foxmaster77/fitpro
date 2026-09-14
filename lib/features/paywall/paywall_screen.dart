@@ -8,7 +8,9 @@ import '../../theme/app_colors.dart';
 import '../../widgets/controls.dart';
 
 class PaywallScreen extends ConsumerWidget {
-  const PaywallScreen({super.key});
+  const PaywallScreen({super.key, this.triggerReason});
+
+  final String? triggerReason;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,8 +30,31 @@ class PaywallScreen extends ConsumerWidget {
         children: [
           const Text(
             'Keep logging free. Pay only if the coach should see around corners.',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.2),
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
+            ),
           ),
+          if (triggerReason != null) ...[
+            const SizedBox(height: 12),
+            GlassCard(
+              accent: AppColors.warning,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.shield_moon, color: AppColors.warning),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      triggerReason!,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           const Text(
             'Built against subscription fatigue: core tracking never locks.',
@@ -81,7 +106,10 @@ class PaywallScreen extends ConsumerWidget {
                       backgroundColor: AppColors.lime,
                       content: Text(
                         'AI Pro unlocked (simulated purchase)',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   );
@@ -123,7 +151,13 @@ class _PlanCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const Spacer(),
               Text(
                 price,

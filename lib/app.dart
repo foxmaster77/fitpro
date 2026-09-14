@@ -38,22 +38,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/boot',
-        builder: (context, state) => const _BootScreen(),
-      ),
+      GoRoute(path: '/boot', builder: (context, state) => const _BootScreen()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/paywall',
-        builder: (context, state) => const PaywallScreen(),
+        builder: (context, state) =>
+            PaywallScreen(triggerReason: state.extra as String?),
       ),
-      GoRoute(
-        path: '/goals',
-        builder: (context, state) => const GoalsScreen(),
-      ),
+      GoRoute(path: '/goals', builder: (context, state) => const GoalsScreen()),
       GoRoute(
         path: '/routine-builder',
         builder: (context, state) => const RoutineBuilderScreen(),
@@ -72,7 +67,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/coach',
-                builder: (context, state) => const SafeArea(child: HomeScreen()),
+                builder: (context, state) =>
+                    const SafeArea(child: HomeScreen()),
               ),
             ],
           ),
@@ -80,7 +76,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/log',
-                builder: (context, state) => const SafeArea(child: WorkoutScreen()),
+                builder: (context, state) =>
+                    const SafeArea(child: WorkoutScreen()),
               ),
             ],
           ),
@@ -97,7 +94,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/you',
-                builder: (context, state) => const SafeArea(child: ProfileScreen()),
+                builder: (context, state) =>
+                    const SafeArea(child: ProfileScreen()),
               ),
             ],
           ),

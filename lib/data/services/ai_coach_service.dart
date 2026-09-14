@@ -78,6 +78,7 @@ User context (must influence volume, intensity, and exercise selection):
 - Daily Readiness: ${readiness.dailyReadiness}/100
 ${profile != null ? '- Fitness Goal: ${profile.fitnessGoal ?? "Maintain"}' : ''}
 ${profile != null ? '- Display name: ${profile.displayName}' : ''}
+${profile != null ? '- Injury history: ${profile.injuryHistory.isEmpty ? "None reported" : profile.injuryHistory.join(", ")}' : ''}
 
 Return ONLY valid JSON with this exact schema:
 {
@@ -100,6 +101,8 @@ Rules:
 - If readiness > 70 and fatigue < 40: Can include higher intensity work
 - Scale load to userLevel and userXp (lower level = more coaching cues, fewer max-effort sets)
 - Respect energy availability implied by BMR/TDEE
+- Never prescribe exercises that load or stress a reported injured area.
+- When injury history is present, explain the modification in rationale and add a specific injuryFlags entry for each relevant precaution.
 - Total workout time should be 30-45 minutes
 - Include 3-4 exercise blocks
 - Focus on compound movements when appropriate
@@ -131,9 +134,11 @@ Rules:
     UserProfile? profile,
   ) {
     try {
-      final json = jsonDecode(_extractJsonFromResponse(jsonResponse))
-          as Map<String, dynamic>;
-      final blocks = (json['blocks'] as List<dynamic>?)
+      final json =
+          jsonDecode(_extractJsonFromResponse(jsonResponse))
+              as Map<String, dynamic>;
+      final blocks =
+          (json['blocks'] as List<dynamic>?)
               ?.map(
                 (block) => AiWorkoutBlock(
                   title: block['title'] as String? ?? 'Exercise',
@@ -150,7 +155,8 @@ Rules:
         title: json['title'] as String? ?? 'Custom Routine',
         rationale: json['rationale'] as String? ?? 'AI-generated routine',
         focus: _parseFocus(json['focus'] as String?),
-        injuryFlags: (json['injuryFlags'] as List<dynamic>?)
+        injuryFlags:
+            (json['injuryFlags'] as List<dynamic>?)
                 ?.map((e) => e as String)
                 .toList() ??
             [],
@@ -217,7 +223,8 @@ Rules:
             'Sleep $sleep and fatigue $fatigue point to incomplete recovery. Volume is cut; tissue quality is the session.',
         focus: AiWorkoutFocus.mobility,
         injuryFlags: [
-          if (fatigue > 70) 'High residual fatigue — skip loaded spinal flexion',
+          if (fatigue > 70)
+            'High residual fatigue — skip loaded spinal flexion',
           if (sleep < 50) 'Sleep debt — avoid max-effort intervals',
         ],
         blocks: const [
@@ -305,9 +312,7 @@ Rules:
       rationale:
           'Readiness $score is in the workable zone. Mixed stimulus without stacking fatigue.',
       focus: AiWorkoutFocus.mixed,
-      injuryFlags: const [
-        'Keep rest honest between compounds',
-      ],
+      injuryFlags: const ['Keep rest honest between compounds'],
       blocks: const [
         AiWorkoutBlock(
           title: 'Front squat',
