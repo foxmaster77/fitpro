@@ -35,3 +35,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - gradient-fitness-app-template/10085937.jpg

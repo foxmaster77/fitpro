@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +12,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
-
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _page = PageController();
   final _name = TextEditingController();
@@ -50,49 +48,52 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWelcome = _index == 0;
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-              child: Row(
-                children: [
-                  const Text(
-                    'FITPRO',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
-                      color: AppColors.lime,
+            if (!isWelcome)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                child: Row(
+                  children: [
+                    const Text(
+                      'FITPRO',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                        color: AppColors.lime,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${_index + 1} / 4',
-                    style: const TextStyle(color: AppColors.textMuted),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: LinearProgressIndicator(
-                  minHeight: 6,
-                  value: (_index + 1) / 4,
-                  color: AppColors.electric,
-                  backgroundColor: AppColors.surfaceMuted,
+                    const Spacer(),
+                    Text(
+                      '${_index + 1} / 4',
+                      style: const TextStyle(color: AppColors.textMuted),
+                    ),
+                  ],
                 ),
               ),
-            ),
+            if (!isWelcome) const SizedBox(height: 12),
+            if (!isWelcome)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(99),
+                  child: LinearProgressIndicator(
+                    minHeight: 6,
+                    value: (_index + 1) / 4,
+                    color: AppColors.electric,
+                    backgroundColor: AppColors.surfaceMuted,
+                  ),
+                ),
+              ),
             Expanded(
               child: PageView(
                 controller: _page,
                 onPageChanged: (i) => setState(() => _index = i),
                 children: [
-                  _WelcomePane(),
+                  _WelcomePane(onTap: _next),
                   _PrivacyPane(
                     accepted: _accepted,
                     onChanged: (v) => setState(() => _accepted = v),
@@ -108,14 +109,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-              child: NeonButton(
-                label: _index == 3 ? 'Enter the vault' : 'Continue',
-                onPressed: _index == 3 && !_accepted ? null : _next,
-                lime: _index == 3,
+            if (!isWelcome)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                child: NeonButton(
+                  label: _index == 3 ? 'Enter the vault' : 'Continue',
+                  onPressed: _index == 3 && !_accepted ? null : _next,
+                  lime: _index == 3,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -187,43 +189,20 @@ class _InjuryPane extends StatelessWidget {
 }
 
 class _WelcomePane extends StatelessWidget {
+  const _WelcomePane({required this.onTap});
+
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Training that stays with you — without selling you out.',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
-            ),
-          ).animate().fadeIn().slideY(begin: 0.12, duration: 500.ms),
-          const SizedBox(height: 16),
-          const Text(
-            'FITPRO is built for retention without subscription fatigue: core logging is free forever. AI Pro is optional.',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 16,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: 28),
-          const _Pill(icon: Icons.offline_bolt, text: 'Works fully offline'),
-          const SizedBox(height: 12),
-          const _Pill(
-            icon: Icons.psychology_alt,
-            text: 'Daily readiness, not guilt',
-          ),
-          const SizedBox(height: 12),
-          const _Pill(
-            icon: Icons.merge_type,
-            text: 'Lifts, runs, calories in one log',
-          ),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox.expand(
+        child: Image.asset(
+          'gradient-fitness-app-template/10085937.jpg',
+          fit: BoxFit.cover,
+          alignment: Alignment.centerLeft,
+        ),
       ),
     );
   }
@@ -345,28 +324,3 @@ class _PrivacyRow extends StatelessWidget {
   }
 }
 
-class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.electric),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
