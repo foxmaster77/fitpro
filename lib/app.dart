@@ -12,6 +12,7 @@ import 'features/profile/profile_screen.dart';
 import 'features/routine_builder/routine_builder_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/telehealth/telehealth_screen.dart';
+import 'features/workout/workout_complete_screen.dart';
 import 'features/workout/workout_screen.dart';
 import 'state/app_session.dart';
 import 'theme/app_theme.dart';
@@ -63,6 +64,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/routine-builder',
         builder: (context, state) => const RoutineBuilderScreen(),
+      ),
+      GoRoute(
+        path: '/workout-complete',
+        builder: (context, state) => const WorkoutCompleteScreen(),
       ),
       GoRoute(
         path: '/exercise/:exerciseId',

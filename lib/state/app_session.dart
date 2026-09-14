@@ -315,7 +315,6 @@ class AppSessionController extends AsyncNotifier<AppSession> {
     await _repo.saveProfile(profile);
     await _updateDailyQuestForWorkout();
 
-    final leveledUp = newLevel > current.profile.userLevel;
     state = AsyncData(current.copyWith(profile: profile));
   }
 

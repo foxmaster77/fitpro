@@ -11,51 +11,94 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.void_,
       body: navigationShell,
-      bottomNavigationBar: DecoratedBox(
+      bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: const Border(top: BorderSide(color: AppColors.stroke)),
+          color: const Color(0xFF0C111C),
+          border: const Border(top: BorderSide(color: Color(0x1FFFFFFF), width: 1)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.electric.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 20,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
-        child: NavigationBar(
-          height: 72,
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavItem(
+                  icon: Icons.bolt,
+                  label: 'COACH',
+                  selected: navigationShell.currentIndex == 0,
+                  onTap: () => navigationShell.goBranch(0),
+                ),
+                _NavItem(
+                  icon: Icons.fitness_center,
+                  label: 'LOG',
+                  selected: navigationShell.currentIndex == 1,
+                  onTap: () => navigationShell.goBranch(1),
+                ),
+                _NavItem(
+                  icon: Icons.shield_outlined,
+                  label: 'REHAB',
+                  selected: navigationShell.currentIndex == 2,
+                  onTap: () => navigationShell.goBranch(2),
+                ),
+                _NavItem(
+                  icon: Icons.person_outline,
+                  label: 'YOU',
+                  selected: navigationShell.currentIndex == 3,
+                  onTap: () => navigationShell.goBranch(3),
+                ),
+              ],
+            ),
           ),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.bolt_outlined, size: 26),
-              selectedIcon: Icon(Icons.bolt, color: AppColors.lime, size: 26),
-              label: 'Coach',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.fitness_center_outlined, size: 26),
-              selectedIcon:
-                  Icon(Icons.fitness_center, color: AppColors.lime, size: 26),
-              label: 'Log',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.health_and_safety_outlined, size: 26),
-              selectedIcon: Icon(
-                Icons.health_and_safety,
-                color: AppColors.lime,
-                size: 26,
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.lime : AppColors.textMuted;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                letterSpacing: 0.8,
               ),
-              label: 'Rehab',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline, size: 26),
-              selectedIcon: Icon(Icons.person, color: AppColors.lime, size: 26),
-              label: 'You',
             ),
           ],
         ),
